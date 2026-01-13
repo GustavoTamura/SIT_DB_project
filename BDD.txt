@@ -51,7 +51,8 @@ CREATE TABLE Customer (
     password_hash VARCHAR(255),
     card_number VARCHAR(20),
     expiry_date DATE,
-    cvv VARCHAR(4)
+    cvv VARCHAR(4),
+    admin BOOLEAN DEFAULT 0
 );
 
 -- BOOKING
@@ -135,17 +136,17 @@ INSERT INTO Seats (seat_number, room_id) VALUES
 
 
 
-INSERT INTO Customer (name, email, phone, password_hash, card_number, expiry_date, cvv) VALUES
-('Ali','ali@mail.com','123456','hash1','1111222233334444','2027-01-01','123'),
-('Sara','sara@mail.com','123457','hash2','2222333344445555','2027-02-01','234'),
-('Omar','omar@mail.com','123458','hash3','3333444455556666','2027-03-01','345'),
-('Lina','lina@mail.com','123459','hash4','4444555566667777','2027-04-01','456'),
-('Nora','nora@mail.com','123460','hash5','5555666677778888','2027-05-01','567'),
-('Adam','adam@mail.com','123461','hash6','6666777788889999','2027-06-01','678'),
-('Yassine','yas@mail.com','123462','hash7','7777888899990000','2027-07-01','789'),
-('Maya','maya@mail.com','123463','hash8','8888999900001111','2027-08-01','890'),
-('Sam','sam@mail.com','123464','hash9','9999000011112222','2027-09-01','901'),
-('Emma','emma@mail.com','123465','hash10','0000111122223333','2027-10-01','012');
+INSERT INTO Customer (name, email, phone, password_hash, card_number, expiry_date, cvv, admin) VALUES
+('Ali','ali@mail.com','123456','hash1','1111222233334444','2027-01-01','123',1),
+('Sara','sara@mail.com','123457','hash2','2222333344445555','2027-02-01','234',1),
+('Omar','omar@mail.com','123458','hash3','3333444455556666','2027-03-01','345',0),
+('Lina','lina@mail.com','123459','hash4','4444555566667777','2027-04-01','456',0),
+('Nora','nora@mail.com','123460','hash5','5555666677778888','2027-05-01','567',0),
+('Adam','adam@mail.com','123461','hash6','6666777788889999','2027-06-01','678',0),
+('Yassine','yas@mail.com','123462','hash7','7777888899990000','2027-07-01','789',0),
+('Maya','maya@mail.com','123463','hash8','8888999900001111','2027-08-01','890',0),
+('Sam','sam@mail.com','123464','hash9','9999000011112222','2027-09-01','901',0),
+('Emma','emma@mail.com','123465','hash10','0000111122223333','2027-10-01','012',0);
 
 
 
