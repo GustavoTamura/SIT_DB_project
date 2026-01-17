@@ -1,3 +1,17 @@
+<?php 
+require_once 'db_connect.php';
+
+// Fetch all movies from database
+$sql = "SELECT movie_id, title, duration, description FROM Movie ORDER BY title";
+$result = $conn->query($sql);
+
+$movies = [];
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        $movies[] = $row;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -487,83 +501,25 @@
         <section id="movies">
             <h2 class="section-title">Now Showing</h2>
             <div class="movies-grid">
-                <div class="movie-card" onclick="selectMovie('Dune: Part Two', 'Sci-Fi', '2h 46m', 'PG-13')">
-                    <div class="movie-poster">🎬</div>
+                <?php foreach ($movies as $movie): 
+                    $hours = floor($movie['duration'] / 60);
+                    $mins = $movie['duration'] % 60;
+                    $duration = "{$hours}h {$mins}m";
+                    $icons = ['🎬', '🎭', '🎀', '🦇', '🌀', '🌌', '🎪', '🎨', '🎯', '🎵'];
+                    $icon = $icons[$movie['movie_id'] % count($icons)];
+                ?>
+                <div class="movie-card">
+                    <div class="movie-poster" style="cursor: pointer;" onclick="selectMovie('<?= addslashes($movie['title']) ?>', '<?= addslashes($movie['description']) ?>', '<?= $duration ?>', 'PG-13', <?= $movie['movie_id'] ?>)"><?= $icon ?></div>
                     <div class="movie-info">
-                        <h3 class="movie-title">Dune: Part Two</h3>
+                        <h3 class="movie-title"><?= htmlspecialchars($movie['title']) ?></h3>
                         <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.0</span>
-                            <span>Sci-Fi</span>
-                            <span>2h 46m</span>
+                            <span class="movie-rating">⭐ 8.5</span>
+                            <span><?= $duration ?></span>
                         </div>
-                        <a href="booking.html" class="btn">Book Now</a>
+                        <button class="btn" type="button" onclick="event.stopPropagation(); selectMovie('<?= addslashes($movie['title']) ?>', '<?= addslashes($movie['description']) ?>', '<?= $duration ?>', 'PG-13', <?= $movie['movie_id'] ?>); return false;">Book Now</button>
                     </div>
                 </div>
-
-                <div class="movie-card" onclick="selectMovie('Oppenheimer', 'Biography', '3h 0m', 'R')">
-                    <div class="movie-poster">🎭</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Oppenheimer</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 8.8</span>
-                            <span>Biography</span>
-                            <span>3h 0m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('Barbie', 'Comedy', '1h 54m', 'PG-13')">
-                    <div class="movie-poster">🎀</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Barbie</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 7.5</span>
-                            <span>Comedy</span>
-                            <span>1h 54m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('The Dark Knight', 'Action', '2h 32m', 'PG-13')">
-                    <div class="movie-poster">🦇</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">The Dark Knight</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.5</span>
-                            <span>Action</span>
-                            <span>2h 32m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('Inception', 'Sci-Fi', '2h 28m', 'PG-13')">
-                    <div class="movie-poster">🌀</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Inception</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.2</span>
-                            <span>Sci-Fi</span>
-                            <span>2h 28m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('Interstellar', 'Sci-Fi', '2h 49m', 'PG-13')">
-                    <div class="movie-poster">🌌</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Interstellar</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.1</span>
-                            <span>Sci-Fi</span>
-                            <span>2h 49m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </section>
 
@@ -653,7 +609,21 @@
                 <span>Total Amount:</span>
                 <span class="total-price" id="summary-total">$0.00</span>
             </div>
-            <button class="btn" onclick="confirmBooking()" style="margin-top: 1.5rem;">Confirm Booking</button>
+            
+            <!-- Customer Details Form -->
+            <div id="customer-form" style="margin-top: 2rem; display: none;">
+                <h3 style="margin-bottom: 1rem;">Your Details</h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <input type="text" id="customer-name" placeholder="Full Name" style="padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;" required>
+                    <input type="email" id="customer-email" placeholder="Email" style="padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;" required>
+                    <input type="tel" id="customer-phone" placeholder="Phone" style="padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white;" required>
+                </div>
+                <button class="btn" id="confirm-btn" onclick="processBooking()" style="margin-top: 1.5rem;">Complete Booking</button>
+            </div>
+            
+            <button class="btn" id="proceed-btn" onclick="showCustomerForm()" style="margin-top: 1.5rem;">Proceed to Checkout</button>
+            
+            <div id="booking-message" style="margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none;"></div>
         </section>
     </div>
 
@@ -672,91 +642,49 @@
         </div>
     </footer>
 
-    <script src="auth.js"></script>
     <script>
         let selectedMovie = null;
+        let selectedMovieId = null;
         let selectedShowtime = null;
+        let selectedShowtimeId = null;
         let selectedSeats = [];
+        let selectedSeatIds = [];
         const ticketPrice = 12.00;
-        const occupiedSeats = ['A1', 'A2', 'B5', 'C3', 'D7', 'E2', 'F9', 'G4', 'H6', 'I8', 'J1', 'K5', 'L3'];
-        
-        // Load movies from database
-        async function loadMoviesFromDB() {
-            try {
-                const response = await fetch('api/get_movies.php');
-                const data = await response.json();
-                
-                if (data.success && data.movies.length > 0) {
-                    const moviesGrid = document.querySelector('.movies-grid');
-                    if (moviesGrid) {
-                        moviesGrid.innerHTML = '';
-                        
-                        data.movies.forEach(movie => {
-                            const duration = movie.duration ? `${Math.floor(movie.duration / 60)}h ${movie.duration % 60}m` : 'N/A';
-                            const description = movie.description || 'No description available';
-                            
-                            const movieCard = document.createElement('div');
-                            movieCard.className = 'movie-card';
-                            movieCard.innerHTML = `
-                                <div class="movie-poster">🎬</div>
-                                <div class="movie-info">
-                                    <h3 class="movie-title">${escapeHtml(movie.title)}</h3>
-                                    <div class="movie-meta">
-                                        <span class="movie-rating">⭐ 8.5</span>
-                                        <span>Movie</span>
-                                        <span>${duration}</span>
-                                    </div>
-                                    <a href="booking.html?movie=${encodeURIComponent(movie.title)}" class="btn">Book Now</a>
-                                </div>
-                            `;
-                            
-                            moviesGrid.appendChild(movieCard);
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading movies:', error);
-            }
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        // Load movies on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadMoviesFromDB();
-        });
+        let occupiedSeats = [];
 
         // Initialize seats grid
-        function initSeats() {
+        function initSeats(showtimeId) {
             const seatsGrid = document.getElementById('seats-grid');
-            seatsGrid.innerHTML = '';
-            const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-            const cols = 12;
+            seatsGrid.innerHTML = '<p>Loading seats...</p>';
+            
+            fetch('api.php?action=get_seats&showtime_id=' + showtimeId)
+                .then(response => response.json())
+                .then(result => {
+                    const seats = result.data || [];
+                    seatsGrid.innerHTML = '';
+                    
+                    seats.forEach(seat => {
+                        const seatDiv = document.createElement('div');
+                        seatDiv.className = 'seat';
+                        seatDiv.textContent = seat.seat_number;
+                        seatDiv.dataset.seatId = seat.seat_id;
+                        seatDiv.dataset.seatNumber = seat.seat_number;
 
-            rows.forEach(row => {
-                for (let col = 1; col <= cols; col++) {
-                    const seatId = row + col;
-                    const seat = document.createElement('div');
-                    seat.className = 'seat';
-                    seat.textContent = seatId;
-                    seat.dataset.seatId = seatId;
+                        if (seat.is_booked == 1) {
+                            seatDiv.classList.add('occupied');
+                        }
 
-                    if (occupiedSeats.includes(seatId)) {
-                        seat.classList.add('occupied');
-                    }
-
-                    seat.addEventListener('click', () => toggleSeat(seatId, seat));
-                    seatsGrid.appendChild(seat);
-                }
-            });
+                        seatDiv.addEventListener('click', () => toggleSeat(seat.seat_id, seat.seat_number, seatDiv));
+                        seatsGrid.appendChild(seatDiv);
+                    });
+                });
         }
 
-        function selectMovie(title, genre, duration, rating) {
+        function selectMovie(title, genre, duration, rating, movieId) {
+            console.log('selectMovie called:', title, movieId);
+            
             selectedMovie = title;
+            selectedMovieId = movieId;
             document.getElementById('selected-movie-title').textContent = title;
             document.getElementById('selected-movie-info').textContent = `${genre} • ${duration} • ${rating}`;
             document.getElementById('booking-section').classList.remove('hidden');
@@ -764,38 +692,78 @@
             document.getElementById('seats-section').classList.add('hidden');
             document.getElementById('summary-section').classList.add('hidden');
             selectedShowtime = null;
+            selectedShowtimeId = null;
             selectedSeats = [];
+            selectedSeatIds = [];
             
-            // Reset showtime buttons
-            document.querySelectorAll('.showtime-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-
+            console.log('Loading showtimes for movie:', movieId);
+            // Load showtimes for this movie
+            loadShowtimes(movieId);
+            
             // Scroll to booking section
-            document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+            console.log('Scrolling to booking section');
+            const bookingSection = document.getElementById('booking');
+            if (bookingSection) {
+                bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                console.error('Booking section not found!');
+            }
+        }
+        
+        function loadShowtimes(movieId) {
+            const showtimesGrid = document.querySelector('.showtimes-grid');
+            showtimesGrid.innerHTML = '<p>Loading showtimes...</p>';
+            
+            fetch('api.php?action=get_showtimes&movie_id=' + movieId)
+                .then(response => response.json())
+                .then(result => {
+                    const showtimes = result.data || [];
+                    if (showtimes.length === 0) {
+                        showtimesGrid.innerHTML = '<p>No showtimes available for this movie.</p>';
+                        return;
+                    }
+                    
+                    showtimesGrid.innerHTML = '';
+                    showtimes.forEach(showtime => {
+                        const btn = document.createElement('button');
+                        btn.className = 'showtime-btn';
+                        btn.textContent = `${showtime.show_date} ${showtime.show_time}`;
+                        btn.onclick = () => selectShowtime(showtime, btn);
+                        showtimesGrid.appendChild(btn);
+                    });
+                });
         }
 
-        function selectShowtime(time, element) {
-            selectedShowtime = time;
+        function selectShowtime(showtime, element) {
+            selectedShowtime = `${showtime.show_date} ${showtime.show_time} - ${showtime.theater_name} (${showtime.room_name})`;
+            selectedShowtimeId = showtime.showtime_id;
+            
             document.querySelectorAll('.showtime-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
             element.classList.add('selected');
             document.getElementById('seats-section').classList.remove('hidden');
-            initSeats();
+            initSeats(showtime.showtime_id);
+            
+            // Reset selected seats
+            selectedSeats = [];
+            selectedSeatIds = [];
+            updateSummary();
         }
 
-        function toggleSeat(seatId, element) {
+        function toggleSeat(seatId, seatNumber, element) {
             if (element.classList.contains('occupied')) {
                 return;
             }
 
             if (element.classList.contains('selected')) {
                 element.classList.remove('selected');
-                selectedSeats = selectedSeats.filter(s => s !== seatId);
+                selectedSeats = selectedSeats.filter(s => s !== seatNumber);
+                selectedSeatIds = selectedSeatIds.filter(id => id !== seatId);
             } else {
                 element.classList.add('selected');
-                selectedSeats.push(seatId);
+                selectedSeats.push(seatNumber);
+                selectedSeatIds.push(seatId);
             }
 
             updateSummary();
@@ -810,29 +778,158 @@
                 document.getElementById('summary-count').textContent = selectedSeats.length;
                 const total = (selectedSeats.length * ticketPrice).toFixed(2);
                 document.getElementById('summary-total').textContent = `$${total}`;
+                
+                // Reset form visibility
+                document.getElementById('customer-form').style.display = 'none';
+                document.getElementById('proceed-btn').style.display = 'block';
+                document.getElementById('booking-message').style.display = 'none';
             } else {
                 document.getElementById('summary-section').classList.add('hidden');
             }
         }
 
-        function confirmBooking() {
-            if (selectedSeats.length === 0) {
-                alert('Please select at least one seat.');
+        function showCustomerForm() {
+            document.getElementById('customer-form').style.display = 'block';
+            document.getElementById('proceed-btn').style.display = 'none';
+            document.getElementById('customer-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function processBooking() {
+            console.log('processBooking called');
+            
+            const name = document.getElementById('customer-name').value.trim();
+            const email = document.getElementById('customer-email').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
+            
+            console.log('Form data:', { name, email, phone, selectedSeats, selectedSeatIds, selectedShowtimeId });
+            
+            if (!name || !email || !phone) {
+                showMessage('Please fill in all fields', 'error');
                 return;
             }
-
-            alert(`Booking confirmed!\n\nMovie: ${selectedMovie}\nShowtime: ${selectedShowtime}\nSeats: ${selectedSeats.join(', ')}\nTotal: $${(selectedSeats.length * ticketPrice).toFixed(2)}\n\nThank you for your booking!`);
             
-            // Reset booking
+            if (selectedSeats.length === 0) {
+                showMessage('Please select at least one seat.', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const confirmBtn = document.getElementById('confirm-btn');
+            const originalText = confirmBtn.textContent;
+            confirmBtn.textContent = 'Processing...';
+            confirmBtn.disabled = true;
+            showMessage('Processing your booking...', 'info');
+
+            // Process each seat booking
+            const bookingPromises = selectedSeatIds.map(seatId => {
+                const bookingData = {
+                    name: name,
+                    email: email,
+                    phone: phone,
+                    showtime_id: selectedShowtimeId,
+                    seat_id: seatId,
+                    price: ticketPrice
+                };
+                
+                console.log('Sending booking request:', bookingData);
+                api.php?action=book
+                return fetch('process_booking.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('Response text:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('JSON parse error:', e);
+                        throw new Error('Invalid response from server: ' + text);
+                    }
+                });
+            });
+            
+            Promise.all(bookingPromises)
+                .then(results => {
+                    console.log('Booking results:', results);
+                    const allSuccess = results.every(r => r.success);
+                    const bookingIds = results.filter(r => r.success).map(r => r.booking_id);
+                    
+                    confirmBtn.textContent = originalText;
+                    confirmBtn.disabled = false;
+                    
+                    if (allSuccess) {
+                        showMessage(
+                            `✅ Booking Confirmed!\n\nMovie: ${selectedMovie}\nShowtime: ${selectedShowtime}\nSeats: ${selectedSeats.join(', ')}\nTotal: $${(selectedSeats.length * ticketPrice).toFixed(2)}\n\nBooking IDs: ${bookingIds.join(', ')}\n\nA confirmation will be sent to ${email}`,
+                            'success'
+                        );
+                        
+                        // Reset after 5 seconds
+                        setTimeout(() => {
+                            resetBooking();
+                        }, 5000);
+                    } else {
+                        const errors = results.filter(r => !r.success).map(r => r.message);
+                        showMessage(`❌ Booking failed: ${errors.join(', ')}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Booking error:', error);
+                    confirmBtn.textContent = originalText;
+                    confirmBtn.disabled = false;
+                    showMessage(`❌ Error: ${error.message}. Please check console for details.`, 'error');
+                });
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('booking-message');
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = message;
+            messageDiv.style.whiteSpace = 'pre-line';
+            messageDiv.style.padding = '1rem';
+            messageDiv.style.borderRadius = '8px';
+            messageDiv.style.marginTop = '1rem';
+            
+            if (type === 'success') {
+                messageDiv.style.background = '#4caf50';
+                messageDiv.style.color = 'white';
+            } else if (type === 'error') {
+                messageDiv.style.background = '#f44336';
+                messageDiv.style.color = 'white';
+            } else {
+                messageDiv.style.background = 'rgba(255, 255, 255, 0.2)';
+                messageDiv.style.color = 'white';
+            }
+        }
+        
+        function resetBooking() {
             selectedMovie = null;
+            selectedMovieId = null;
             selectedShowtime = null;
+            selectedShowtimeId = null;
             selectedSeats = [];
+            selectedSeatIds = [];
             document.getElementById('booking-section').classList.add('hidden');
             document.getElementById('summary-section').classList.add('hidden');
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-email').value = '';
+            document.getElementById('customer-phone').value = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function confirmBooking() {
+            // This is the old function - redirect to new flow
+            showCustomerForm();
         }
 
         // Initialize on page load
-        initSeats();
+        // Seats will be loaded when a showtime is selected
     </script>
 </body>
 </html>

@@ -1,4 +1,7 @@
-CREATE DATABASE cinema_booking;
+-- Cinema Booking Database
+-- Created: January 13, 2026
+
+CREATE DATABASE IF NOT EXISTS cinema_booking;
 USE cinema_booking;
 
 -- THEATER
@@ -51,8 +54,7 @@ CREATE TABLE Customer (
     password_hash VARCHAR(255),
     card_number VARCHAR(20),
     expiry_date DATE,
-    cvv VARCHAR(4),
-    admin BOOLEAN DEFAULT 0
+    cvv VARCHAR(4)
 );
 
 -- BOOKING
@@ -70,35 +72,18 @@ CREATE TABLE Booking (
     FOREIGN KEY (seat_id) REFERENCES Seats(seat_id)
 );
 
-
-
-
-
-
-
-
-
-
-
+-- Insert sample data for Theater
 INSERT INTO Theater (theater_name) VALUES
 ('Cinema Central'), ('Mega Movies'), ('Galaxy Cinema'), ('Starplex'),
 ('MovieLand'), ('Silver Screen'), ('CineMax'), ('Grand Cinema'),
 ('Royal Movies'), ('Urban Cinema');
 
-
-
-
-
-
-
-
+-- Insert sample data for Room
 INSERT INTO Room (room_name, theater_id) VALUES
 ('Room 1',1), ('Room 2',1), ('Room 1',2), ('Room 2',2), ('Room 1',3),
 ('Room 1',4), ('Room 2',4), ('Room 1',5), ('Room 1',6), ('Room 2',6);
 
-
-
-
+-- Insert sample data for Movie
 INSERT INTO Movie (title, duration, description) VALUES
 ('Inception',148,'Dream within a dream'),
 ('Interstellar',169,'Space and time'),
@@ -111,9 +96,7 @@ INSERT INTO Movie (title, duration, description) VALUES
 ('Batman',152,'Dark knight'),
 ('Dune',155,'Desert planet');
 
-
-
-
+-- Insert sample data for Showtime
 INSERT INTO Showtime (show_date, show_time, room_id, movie_id) VALUES
 ('2026-01-10','18:00',1,1),
 ('2026-01-10','20:00',2,2),
@@ -126,32 +109,25 @@ INSERT INTO Showtime (show_date, show_time, room_id, movie_id) VALUES
 ('2026-01-14','18:00',9,9),
 ('2026-01-14','20:00',10,10);
 
-
-
-
+-- Insert sample data for Seats
 INSERT INTO Seats (seat_number, room_id) VALUES
 ('A1',1), ('A2',1), ('B1',2), ('B2',2), ('C1',3),
 ('C2',3), ('D1',4), ('D2',4), ('E1',5), ('E2',5);
 
+-- Insert sample data for Customer
+INSERT INTO Customer (name, email, phone, password_hash, card_number, expiry_date, cvv) VALUES
+('Ali','ali@mail.com','123456','hash1','1111222233334444','2027-01-01','123'),
+('Sara','sara@mail.com','123457','hash2','2222333344445555','2027-02-01','234'),
+('Omar','omar@mail.com','123458','hash3','3333444455556666','2027-03-01','345'),
+('Lina','lina@mail.com','123459','hash4','4444555566667777','2027-04-01','456'),
+('Nora','nora@mail.com','123460','hash5','5555666677778888','2027-05-01','567'),
+('Adam','adam@mail.com','123461','hash6','6666777788889999','2027-06-01','678'),
+('Yassine','yas@mail.com','123462','hash7','7777888899990000','2027-07-01','789'),
+('Maya','maya@mail.com','123463','hash8','8888999900001111','2027-08-01','890'),
+('Sam','sam@mail.com','123464','hash9','9999000011112222','2027-09-01','901'),
+('Emma','emma@mail.com','123465','hash10','0000111122223333','2027-10-01','012');
 
-
-
-INSERT INTO Customer (name, email, phone, password_hash, card_number, expiry_date, cvv, admin) VALUES
-('Ali','ali@mail.com','123456','hash1','1111222233334444','2027-01-01','123',1),
-('Sara','sara@mail.com','123457','hash2','2222333344445555','2027-02-01','234',1),
-('Omar','omar@mail.com','123458','hash3','3333444455556666','2027-03-01','345',0),
-('Lina','lina@mail.com','123459','hash4','4444555566667777','2027-04-01','456',0),
-('Nora','nora@mail.com','123460','hash5','5555666677778888','2027-05-01','567',0),
-('Adam','adam@mail.com','123461','hash6','6666777788889999','2027-06-01','678',0),
-('Yassine','yas@mail.com','123462','hash7','7777888899990000','2027-07-01','789',0),
-('Maya','maya@mail.com','123463','hash8','8888999900001111','2027-08-01','890',0),
-('Sam','sam@mail.com','123464','hash9','9999000011112222','2027-09-01','901',0),
-('Emma','emma@mail.com','123465','hash10','0000111122223333','2027-10-01','012',0);
-
-
-
-
-
+-- Insert sample data for Booking
 INSERT INTO Booking (booking_time, status, price, payment_time, customer_id, showtime_id, seat_id) VALUES
 (NOW(),'confirmed',12.50,NOW(),1,1,1),
 (NOW(),'confirmed',12.50,NOW(),2,2,2),
@@ -163,5 +139,3 @@ INSERT INTO Booking (booking_time, status, price, payment_time, customer_id, sho
 (NOW(),'confirmed',14.00,NOW(),8,8,8),
 (NOW(),'confirmed',12.00,NOW(),9,9,9),
 (NOW(),'confirmed',12.00,NOW(),10,10,10);
-
-
