@@ -132,6 +132,36 @@ nav {
     border: 1px solid rgba(255, 255, 255, 0.2);
     background: #111;
     color: var(--text-primary);
+    cursor: pointer;
+}
+
+/* Date input 特殊處理 - 讓圖標變白色且放大點擊區域 */
+.booking-form input[type="date"] {
+    color-scheme: dark;
+    position: relative;
+    cursor: pointer !important;
+}
+
+.booking-form input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer !important;
+    filter: invert(1) brightness(1.5) !important;
+    opacity: 1 !important;
+    position: absolute;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+}
+
+.booking-form input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(1) brightness(2) !important;
+}
+
+/* Firefox 的日期選擇器 */
+.booking-form input[type="date"]::-moz-calendar-picker-indicator {
+    cursor: pointer !important;
+    filter: invert(1) brightness(1.5) !important;
 }
 
 .booking-form textarea {

@@ -205,8 +205,6 @@ if (!isLoggedIn() || !isAdmin()) {
                 <li><a href="booking.html">Booking</a></li>
                 <li><a href="about.html">About</a></li>
                 <li><a href="contact.html">Contact</a></li>
-                <li><a href="admin.php" class="active">Admin</a></li>
-                <li><a href="#" onclick="logout(); return false;">Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -232,6 +230,7 @@ if (!isLoggedIn() || !isAdmin()) {
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Poster</th>
                         <th>Title</th>
                         <th>Duration (min)</th>
                         <th>Description</th>
@@ -267,6 +266,11 @@ if (!isLoggedIn() || !isAdmin()) {
                 <div class="form-group">
                     <label for="movie-description">Description</label>
                     <textarea id="movie-description" name="description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="movie-poster">Poster Image</label>
+                    <input type="file" id="movie-poster" name="poster" accept="image/*">
+                    <div id="current-poster" style="margin-top: 10px;"></div>
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <button type="submit" class="btn" style="flex: 1;">Save</button>
@@ -335,13 +339,18 @@ if (!isLoggedIn() || !isAdmin()) {
             const tbody = document.getElementById('movies-tbody');
             
             if (movies.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="no-movies">No movies found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="no-movies">No movies found</td></tr>';
                 return;
             }
 
             tbody.innerHTML = movies.map(movie => `
                 <tr>
                     <td>${movie.movie_id}</td>
+                    <td>
+                        ${movie.poster_image ? 
+                            `<img src="${movie.poster_image}" alt="${escapeHtml(movie.title)}" style="width: 60px; height: 90px; object-fit: cover; border-radius: 4px;">` : 
+                            '<span style="color: #999;">No image</span>'}
+                    </td>
                     <td><strong>${escapeHtml(movie.title)}</strong></td>
                     <td>${movie.duration || '-'}</td>
                     <td>${escapeHtml(movie.description || '-')}</td>
@@ -382,6 +391,7 @@ if (!isLoggedIn() || !isAdmin()) {
             document.getElementById('modal-title').textContent = 'Add Movie';
             document.getElementById('movie-form').reset();
             document.getElementById('movie-id').value = '';
+            document.getElementById('current-poster').innerHTML = '';
             document.getElementById('movie-modal').style.display = 'block';
         }
 
@@ -398,6 +408,18 @@ if (!isLoggedIn() || !isAdmin()) {
                     document.getElementById('movie-title').value = data.movie.title;
                     document.getElementById('movie-duration').value = data.movie.duration || '';
                     document.getElementById('movie-description').value = data.movie.description || '';
+                    
+                    // Display current poster if exists
+                    const currentPosterDiv = document.getElementById('current-poster');
+                    if (data.movie.poster_image) {
+                        currentPosterDiv.innerHTML = `
+                            <p>Current poster:</p>
+                            <img src="${data.movie.poster_image}" alt="Current poster" style="max-width: 200px; border-radius: 8px;">
+                        `;
+                    } else {
+                        currentPosterDiv.innerHTML = '<p style="color: #999;">No poster uploaded yet</p>';
+                    }
+                    
                     document.getElementById('movie-modal').style.display = 'block';
                 } else {
                     showAlert('Error loading movie', 'error');
@@ -431,6 +453,7 @@ if (!isLoggedIn() || !isAdmin()) {
             }
 
             try {
+                // First save the movie data
                 const response = await fetch(url, {
                     method: method,
                     headers: {
@@ -442,6 +465,14 @@ if (!isLoggedIn() || !isAdmin()) {
                 const data = await response.json();
                 
                 if (data.success) {
+                    const movieId = editingMovieId || data.movie.movie_id;
+                    
+                    // Check if there's a poster file to upload
+                    const posterFile = document.getElementById('movie-poster').files[0];
+                    if (posterFile) {
+                        await uploadPoster(movieId, posterFile);
+                    }
+                    
                     showAlert(editingMovieId ? 'Movie updated successfully' : 'Movie added successfully', 'success');
                     closeModal();
                     loadMovies();
@@ -451,6 +482,27 @@ if (!isLoggedIn() || !isAdmin()) {
             } catch (error) {
                 console.error('Error:', error);
                 showAlert('Connection error', 'error');
+            }
+        }
+
+        // Upload poster image
+        async function uploadPoster(movieId, file) {
+            const formData = new FormData();
+            formData.append('movie_id', movieId);
+            formData.append('poster', file);
+            
+            try {
+                const response = await fetch('api/upload_poster.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Poster upload failed:', data.message);
+                }
+            } catch (error) {
+                console.error('Error uploading poster:', error);
             }
         }
 
@@ -532,21 +584,8 @@ if (!isLoggedIn() || !isAdmin()) {
             div.textContent = text;
             return div.innerHTML;
         }
-
-        // Logout
-        async function logout() {
-            try {
-                const response = await fetch('logout.php');
-                const data = await response.json();
-                
-                if (data.success) {
-                    window.location.href = 'index.html';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        }
     </script>
+    <script src="auth.js?v=6"></script>
 </body>
 </html>
 

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - MovieHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .bookings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .booking-card {
+            background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .booking-id {
+            font-size: 0.9rem;
+            color: #b3b3b3;
+        }
+
+        .booking-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .status-cancelled {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: #b3b3b3;
+            margin-bottom: 0.3rem;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: white;
+            font-weight: 500;
+        }
+
+        .movie-title {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .seats-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .seat-badge {
+            background: rgba(229, 9, 20, 0.2);
+            color: var(--primary-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .no-bookings {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #b3b3b3;
+        }
+
+        .no-bookings h2 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .no-bookings a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #b3b3b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">🎬 MovieHub</a>
+            <ul class="nav-links">
+                <li><a href="index.html#movies">Movies</a></li>
+                <li><a href="booking.html">Booking</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero hero-small">
+        <h1>My Bookings</h1>
+        <p>View your booking history and upcoming shows</p>
+    </section>
+
+    <div class="bookings-container">
+        <div id="bookings-list" class="loading">
+            <p>Loading your bookings...</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 MovieHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="auth.js?v=6"></script>
+    <script>
+        async function loadBookings() {
+            try {
+                const response = await fetch('api/get_my_bookings.php');
+                const data = await response.json();
+                
+                const container = document.getElementById('bookings-list');
+                
+                if (!data.success) {
+                    if (data.message.includes('login')) {
+                        container.innerHTML = `
+                            <div class="no-bookings">
+                                <h2>Please Login</h2>
+                                <p>You need to be logged in to view your bookings.</p>
+                                <p><a href="login.html">Go to Login</a></p>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = `<div class="no-bookings"><p>Error loading bookings: ${data.message}</p></div>`;
+                    }
+                    return;
+                }
+                
+                if (data.bookings.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-bookings">
+                            <h2>No Bookings Yet</h2>
+                            <p>You haven't made any bookings yet.</p>
+                            <p><a href="booking.html">Book Your First Ticket</a></p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Display bookings
+                container.innerHTML = data.bookings.map(booking => {
+                    const date = new Date(booking.show_date).toLocaleDateString('en-US', { 
+                        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
+                    });
+                    const time = booking.show_time.substring(0, 5); // HH:MM
+                    const bookingDate = new Date(booking.booking_time).toLocaleString('en-US');
+                    
+                    return `
+                        <div class="booking-card">
+                            <div class="booking-header">
+                                <span class="booking-id">Booking #${booking.booking_id}</span>
+                                <span class="booking-status status-${booking.status.toLowerCase()}">${booking.status.toUpperCase()}</span>
+                            </div>
+                            <div class="booking-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Movie</span>
+                                    <span class="detail-value movie-title">${booking.movie_title}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Theater & Room</span>
+                                    <span class="detail-value">${booking.theater_name} - ${booking.room_name}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Show Date & Time</span>
+                                    <span class="detail-value">${date}</span>
+                                    <span class="detail-value">${time}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Seats (${booking.ticket_count})</span>
+                                    <div class="seats-display">
+                                        ${booking.seats ? booking.seats.split(', ').map(seat => 
+                                            `<span class="seat-badge">${seat}</span>`
+                                        ).join('') : '<span class="detail-value">-</span>'}
+                                    </div>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Total Price</span>
+                                    <span class="detail-value">$${parseFloat(booking.total_price).toFixed(2)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Booked On</span>
+                                    <span class="detail-value">${bookingDate}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                document.getElementById('bookings-list').innerHTML = `
+                    <div class="no-bookings">
+                        <p>Error loading bookings. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Load bookings when page loads
+        document.addEventListener('DOMContentLoaded', loadBookings);
+    </script>
+</body>
+</html>

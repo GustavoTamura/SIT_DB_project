@@ -1,12 +1,12 @@
 <?php
 require_once 'config.php';
 
-session_start();
+// Session already started in config.php, no need to call session_start() again
 
 // Destroy all session variables
 $_SESSION = array();
 
-// Destroy session
+// Destroy session cookie
 if (isset($_COOKIE[session_name()])) {
     setcookie(session_name(), '', time()-42000, '/');
 }

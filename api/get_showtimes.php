@@ -11,22 +11,46 @@ if (!isset($_GET['movie_id']) || empty($_GET['movie_id'])) {
 }
 
 $movie_id = intval($_GET['movie_id']);
+$theater_id = isset($_GET['theater_id']) ? intval($_GET['theater_id']) : null;
+$date = isset($_GET['date']) ? $_GET['date'] : null;
 
 $conn = getDBConnection();
 
-// Get showtimes for the movie
-// Join with Room and Theater to get more information
+// Build query with optional filters
 $sql = "SELECT s.showtime_id, s.show_date, s.show_time, s.movie_id,
-               r.room_name, r.room_id,
+               r.room_name, r.room_id, r.theater_id,
                t.theater_name
-        FROM Showtime s
-        JOIN Room r ON s.room_id = r.room_id
-        JOIN Theater t ON r.theater_id = t.theater_id
-        WHERE s.movie_id = ?
-        ORDER BY s.show_date, s.show_time";
+        FROM showtime s
+        JOIN room r ON s.room_id = r.room_id
+        JOIN theater t ON r.theater_id = t.theater_id
+        WHERE s.movie_id = ?";
+
+$params = [$movie_id];
+$types = "i";
+
+if ($theater_id) {
+    $sql .= " AND t.theater_id = ?";
+    $params[] = $theater_id;
+    $types .= "i";
+}
+
+if ($date) {
+    $sql .= " AND s.show_date = ?";
+    $params[] = $date;
+    $types .= "s";
+}
+
+$sql .= " ORDER BY s.show_date, s.show_time";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $movie_id);
+
+// Bind parameters dynamically
+if (count($params) > 1) {
+    $stmt->bind_param($types, ...$params);
+} else {
+    $stmt->bind_param($types, $params[0]);
+}
+
 $stmt->execute();
 $result = $stmt->get_result();
 

@@ -12,30 +12,30 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Validate required fields
-if (!isset($data['movie_id']) || !isset($data['showtime_id']) || 
-    !isset($data['tickets']) || !isset($data['name']) || !isset($data['email'])) {
+if (!isset($data['showtime_id']) || !isset($data['seat_ids']) || 
+    !is_array($data['seat_ids']) || empty($data['seat_ids'])) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Missing required fields']);
+    echo json_encode(['success' => false, 'message' => 'Missing required fields (showtime_id and seat_ids required)']);
     exit;
 }
 
-$movie_id = intval($data['movie_id']);
 $showtime_id = intval($data['showtime_id']);
-$tickets = intval($data['tickets']);
-$name = trim($data['name']);
-$email = trim($data['email']);
+$seat_ids = array_map('intval', $data['seat_ids']);
 
-if ($tickets < 1 || $tickets > 10) {
+if (count($seat_ids) < 1 || count($seat_ids) > 10) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Invalid number of tickets']);
+    echo json_encode(['success' => false, 'message' => 'Invalid number of seats (1-10 allowed)']);
     exit;
 }
 
-if (empty($name) || empty($email)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Name and email are required']);
+// Check if user is logged in
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Please login to make a booking']);
     exit;
 }
+
+$customer_id = $_SESSION['user_id']; // Changed from customer_id to user_id
 
 $conn = getDBConnection();
 
@@ -43,26 +43,38 @@ $conn = getDBConnection();
 $conn->begin_transaction();
 
 try {
-    // Check if customer exists, if not create one
-    $stmt = $conn->prepare("SELECT customer_id FROM Customer WHERE email = ?");
-    $stmt->bind_param("s", $email);
+    // Verify all seats exist and are available for this showtime
+    $placeholders = implode(',', array_fill(0, count($seat_ids), '?'));
+    
+    // Check if seats are already booked for this showtime
+    $stmt = $conn->prepare("
+        SELECT DISTINCT t.seat_id, s.seat_number
+        FROM ticket t
+        JOIN booking b ON t.booking_id = b.booking_id
+        JOIN seats s ON t.seat_id = s.seat_id
+        WHERE b.showtime_id = ? 
+          AND b.status = 'confirmed'
+          AND t.seat_id IN ($placeholders)
+    ");
+    
+    $types = 'i' . str_repeat('i', count($seat_ids));
+    $params = array_merge([$showtime_id], $seat_ids);
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result();
     
-    if ($result->num_rows > 0) {
-        $customer = $result->fetch_assoc();
-        $customer_id = $customer['customer_id'];
-    } else {
-        // Create new customer
-        $stmt = $conn->prepare("INSERT INTO Customer (name, email) VALUES (?, ?)");
-        $stmt->bind_param("ss", $name, $email);
-        $stmt->execute();
-        $customer_id = $conn->insert_id;
+    $booked_seats = [];
+    while ($row = $result->fetch_assoc()) {
+        $booked_seats[] = $row['seat_number'];
     }
     $stmt->close();
     
-    // Get showtime details
-    $stmt = $conn->prepare("SELECT show_date, show_time FROM Showtime WHERE showtime_id = ?");
+    if (!empty($booked_seats)) {
+        throw new Exception('Some seats are already booked: ' . implode(', ', $booked_seats));
+    }
+    
+    // Get showtime details and calculate total price
+    $stmt = $conn->prepare("SELECT show_date, show_time, movie_id FROM showtime WHERE showtime_id = ?");
     $stmt->bind_param("i", $showtime_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -74,26 +86,31 @@ try {
     $showtime = $result->fetch_assoc();
     $stmt->close();
     
+    // Calculate total price
+    $price_per_ticket = 12.50;
+    $total_price = $price_per_ticket * count($seat_ids);
+    
     // Create booking
-    $booking_date = date('Y-m-d H:i:s');
+    $booking_time = date('Y-m-d H:i:s');
     $status = 'confirmed';
     
-    $stmt = $conn->prepare("INSERT INTO Booking (customer_id, showtime_id, booking_date, status) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("iiss", $customer_id, $showtime_id, $booking_date, $status);
+    $stmt = $conn->prepare("INSERT INTO booking (customer_id, showtime_id, booking_time, booking_date, status, price, payment_time) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iisssds", $customer_id, $showtime_id, $booking_time, $booking_time, $status, $total_price, $booking_time);
     $stmt->execute();
     $booking_id = $conn->insert_id;
     $stmt->close();
     
-    // For simplicity, we'll create ticket entries without specific seat assignments
-    // In a real system, you'd handle seat selection here
-    for ($i = 0; $i < $tickets; $i++) {
-        $ticket_number = "TKT" . str_pad($booking_id, 6, '0', STR_PAD_LEFT) . str_pad($i + 1, 2, '0', STR_PAD_LEFT);
-        $price = 10.00; // Default price
+    // Create tickets for each selected seat
+    $ticket_numbers = [];
+    foreach ($seat_ids as $index => $seat_id) {
+        $ticket_number = "TKT-" . date('Ymd') . "-" . str_pad($booking_id, 6, '0', STR_PAD_LEFT) . "-" . str_pad($index + 1, 2, '0', STR_PAD_LEFT);
         
-        $stmt = $conn->prepare("INSERT INTO Ticket (booking_id, ticket_number, price) VALUES (?, ?, ?)");
-        $stmt->bind_param("isd", $booking_id, $ticket_number, $price);
+        $stmt = $conn->prepare("INSERT INTO ticket (booking_id, ticket_number, seat_id, price) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isid", $booking_id, $ticket_number, $seat_id, $price_per_ticket);
         $stmt->execute();
         $stmt->close();
+        
+        $ticket_numbers[] = $ticket_number;
     }
     
     // Commit transaction
@@ -102,7 +119,10 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Booking created successfully',
-        'booking_id' => $booking_id
+        'booking_id' => $booking_id,
+        'ticket_numbers' => $ticket_numbers,
+        'total_price' => $total_price,
+        'seats_count' => count($seat_ids)
     ]);
     
 } catch (Exception $e) {

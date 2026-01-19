@@ -2,7 +2,6 @@
 require_once 'config.php';
 
 header('Content-Type: application/json');
-session_start();
 
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -32,7 +31,7 @@ if ($email === '' || $password === '') {
 $conn = getDBConnection();
 
 // Fetch user by email
-$stmt = $conn->prepare("SELECT customer_id, name, email, password_hash, admin FROM Customer WHERE email = ?");
+$stmt = $conn->prepare("SELECT customer_id, name, email, password_hash, admin FROM customer WHERE email = ?");
 if (!$stmt) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'DB error: ' . $conn->error]);

@@ -164,6 +164,14 @@
             font-size: 1.3rem;
             margin-bottom: 0.5rem;
             color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: white-space 0.3s ease;
+        }
+        
+        .movie-card:hover .movie-title {
+            white-space: normal;
         }
 
         .movie-meta {
@@ -188,6 +196,18 @@
             line-height: 1.5;
             color: var(--text-secondary);
             margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-height: 3em;
+            transition: max-height 0.3s ease, -webkit-line-clamp 0.3s ease;
+        }
+        
+        .movie-card:hover .movie-description {
+            -webkit-line-clamp: unset;
+            max-height: 500px;
         }
 
         .btn {
@@ -595,19 +615,11 @@
     <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <div class="footer-links">
-                <a href="#movies">Movies</a>
-                <a href="#booking">Booking</a>
-                <a href="#about">About Us</a>
-                <a href="#contact">Contact</a>
-                <a href="#terms">Terms & Conditions</a>
-                <a href="#privacy">Privacy Policy</a>
-            </div>
             <p>&copy; 2025 MovieHub. All rights reserved.</p>
         </div>
     </footer>
 
-    <script src="auth.js"></script>
+    <script src="auth.js?v=6"></script>
     <script>
         let selectedMovie = null;
         let selectedShowtime = null;
@@ -634,8 +646,14 @@
 
                             const movieCard = document.createElement('div');
                             movieCard.className = 'movie-card';
+                            
+                            // Create poster HTML
+                            const posterHtml = movie.poster_image 
+                                ? `<img src="${movie.poster_image}" alt="${escapeHtml(movie.title)}" style="width: 100%; height: 100%; object-fit: cover;">`
+                                : '🎬';
+                            
                             movieCard.innerHTML = `
-                                <div class="movie-poster">🎬</div>
+                                <div class="movie-poster">${posterHtml}</div>
                                 <div class="movie-info">
                                     <h3 class="movie-title">${escapeHtml(movie.title)}</h3>
                                     <div class="movie-meta">
