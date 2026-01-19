@@ -112,6 +112,54 @@
             border-bottom: 2px solid var(--primary-color);
         }
 
+        /* Search Bar */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
         /* Movies Grid */
         .movies-grid {
             display: grid;
@@ -164,14 +212,11 @@
             font-size: 1.3rem;
             margin-bottom: 0.5rem;
             color: var(--text-primary);
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            transition: white-space 0.3s ease;
-        }
-        
-        .movie-card:hover .movie-title {
-            white-space: normal;
+            line-height: 1.4;
         }
 
         .movie-meta {
@@ -197,17 +242,9 @@
             color: var(--text-secondary);
             margin-bottom: 1rem;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            max-height: 3em;
-            transition: max-height 0.3s ease, -webkit-line-clamp 0.3s ease;
-        }
-        
-        .movie-card:hover .movie-description {
-            -webkit-line-clamp: unset;
-            max-height: 500px;
         }
 
         .btn {
@@ -233,6 +270,221 @@
 
         .btn:active {
             transform: scale(0.98);
+        }
+
+        /* Movie Detail Modal */
+        .movie-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            padding: 2rem;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .movie-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 100%);
+            border-radius: 16px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            position: relative;
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: var(--primary-color);
+            transform: rotate(90deg);
+        }
+
+        .modal-poster {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6rem;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .modal-poster::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #ffd700;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            text-align: center;
+            padding: 1rem 2rem;
+        }
+
+        /* Star Rating */
+        .rating-section {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .rating-section h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 2rem;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .star {
+            cursor: pointer;
+            color: #4a4a4a;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .star:hover,
+        .star.hover {
+            color: #ffd700;
+            transform: scale(1.2);
+        }
+
+        .star.active {
+            color: #ffd700;
+        }
+
+        .star.disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .rating-info {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-rating-display {
+            text-align: center;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
         }
 
         /* Booking Section */
@@ -517,6 +769,12 @@
         <!-- Movies Section -->
         <section id="movies">
             <h2 class="section-title">Now Showing</h2>
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="movieSearch" placeholder="Search movies by title or description...">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
             <div class="movies-grid">
                 <!-- Movie cards will be loaded dynamically from the database -->
             </div>
@@ -612,6 +870,44 @@
         </section>
     </div>
 
+    <!-- Movie Detail Modal -->
+    <div class="movie-modal" id="movieModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" onclick="closeMovieModal()">&times;</button>
+                <div class="modal-poster" id="modalPoster">🎬</div>
+                <h2 class="modal-title" id="modalTitle">Movie Title</h2>
+                <div class="modal-meta">
+                    <span class="modal-rating" id="modalRating">⭐ 8.5</span>
+                    <span id="modalType">Movie</span>
+                    <span id="modalDuration">2h 30m</span>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description" id="modalDescription">
+                    Movie description will appear here...
+                </p>
+            </div>
+            <div class="rating-section">
+                <h3>Rate this movie</h3>
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="6">★</span>
+                    <span class="star" data-rating="8">★</span>
+                    <span class="star" data-rating="10">★</span>
+                </div>
+                <div class="rating-info" id="ratingInfo">
+                    <span id="avgRatingDisplay">No ratings yet</span>
+                </div>
+                <div class="user-rating-display" id="userRatingDisplay"></div>
+            </div>
+            <div class="modal-actions">
+                <a href="#" class="btn" id="modalBookBtn">Book Now</a>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="footer-content">
@@ -627,6 +923,9 @@
         const ticketPrice = 12.00;
         const occupiedSeats = ['A1', 'A2', 'B5', 'C3', 'D7', 'E2', 'F9', 'G4', 'H6', 'I8', 'J1', 'K5', 'L3'];
         
+        // Store all movies globally for search
+        let allMovies = [];
+
         // Load movies from database and display them on the home page
         async function loadMoviesFromDB() {
             try {
@@ -634,15 +933,36 @@
                 const data = await response.json();
                 
                 if (data.success && data.movies.length > 0) {
-                    const moviesGrid = document.querySelector('.movies-grid');
-                    if (moviesGrid) {
-                        moviesGrid.innerHTML = '';
-                        
-                        data.movies.forEach(movie => {
+                    allMovies = data.movies; // Store movies for search
+                    displayMovies(allMovies);
+                }
+            } catch (error) {
+                console.error('Error loading movies:', error);
+            }
+        }
+
+        // Display movies on the page
+        function displayMovies(movies) {
+            const moviesGrid = document.querySelector('.movies-grid');
+            if (moviesGrid) {
+                moviesGrid.innerHTML = '';
+                
+                if (movies.length === 0) {
+                    moviesGrid.innerHTML = '<div class="no-results">No movies found matching your search.</div>';
+                    return;
+                }
+                
+                movies.forEach(movie => {
                             const duration = movie.duration
                                 ? `${Math.floor(movie.duration / 60)}h ${movie.duration % 60}m`
                                 : 'N/A';
                             const description = movie.description || 'No description available';
+                            
+                            // Format rating display
+                            let ratingDisplay = '⭐ N/A';
+                            if (movie.average_rating && movie.average_rating > 0) {
+                                ratingDisplay = `⭐ ${movie.average_rating}`;
+                            }
 
                             const movieCard = document.createElement('div');
                             movieCard.className = 'movie-card';
@@ -657,27 +977,242 @@
                                 <div class="movie-info">
                                     <h3 class="movie-title">${escapeHtml(movie.title)}</h3>
                                     <div class="movie-meta">
-                                        <span class="movie-rating">⭐ 8.5</span>
+                                        <span class="movie-rating">${ratingDisplay}</span>
                                         <span>Movie</span>
                                         <span>${duration}</span>
                                     </div>
                                     <p class="movie-description">
                                         ${escapeHtml(description)}
                                     </p>
-                                    <a href="booking.html?movie=${encodeURIComponent(movie.title)}" class="btn">
+                                    <a href="booking.html?movie=${encodeURIComponent(movie.title)}" class="btn" onclick="event.stopPropagation();">
                                         Book Now
                                     </a>
                                 </div>
                             `;
                             
-                            moviesGrid.appendChild(movieCard);
+                            // Add click event to show modal (except when clicking Book Now button)
+                            movieCard.addEventListener('click', () => {
+                                showMovieModal(movie);
+                            });
+                            
+                    moviesGrid.appendChild(movieCard);
+                });
+            }
+        }
+
+        // Search functionality
+        function searchMovies(query) {
+            const searchTerm = query.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                displayMovies(allMovies);
+                return;
+            }
+            
+            const filteredMovies = allMovies.filter(movie => {
+                const title = movie.title.toLowerCase();
+                const description = (movie.description || '').toLowerCase();
+                return title.includes(searchTerm) || description.includes(searchTerm);
+            });
+            
+            displayMovies(filteredMovies);
+        }
+
+        // Current movie ID for rating
+        let currentMovieId = null;
+
+        // Show movie detail modal
+        function showMovieModal(movie) {
+            const modal = document.getElementById('movieModal');
+            const modalPoster = document.getElementById('modalPoster');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalRating = document.getElementById('modalRating');
+            const modalType = document.getElementById('modalType');
+            const modalDuration = document.getElementById('modalDuration');
+            const modalDescription = document.getElementById('modalDescription');
+            const modalBookBtn = document.getElementById('modalBookBtn');
+            
+            // Set current movie ID
+            currentMovieId = movie.movie_id;
+            
+            // Set poster
+            if (movie.poster_image) {
+                modalPoster.innerHTML = `<img src="${movie.poster_image}" alt="${escapeHtml(movie.title)}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            } else {
+                modalPoster.innerHTML = '🎬';
+            }
+            
+            // Set movie details
+            modalTitle.textContent = movie.title;
+            modalType.textContent = 'Movie';
+            
+            const duration = movie.duration
+                ? `${Math.floor(movie.duration / 60)}h ${movie.duration % 60}m`
+                : 'N/A';
+            modalDuration.textContent = duration;
+            
+            modalDescription.textContent = movie.description || 'No description available';
+            
+            // Set book now button link
+            modalBookBtn.href = `booking.html?movie=${encodeURIComponent(movie.title)}`;
+            
+            // Load and display ratings
+            loadMovieRatings(movie.movie_id);
+            
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close movie detail modal
+        function closeMovieModal() {
+            const modal = document.getElementById('movieModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentMovieId = null;
+        }
+
+        // Load movie ratings
+        async function loadMovieRatings(movieId) {
+            try {
+                const response = await fetch(`api/get_movie_rating.php?movie_id=${movieId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update average rating display
+                    const avgRatingDisplay = document.getElementById('avgRatingDisplay');
+                    const modalRating = document.getElementById('modalRating');
+                    
+                    if (data.total_ratings > 0) {
+                        avgRatingDisplay.textContent = `Average: ${data.average_rating}/10 (${data.total_ratings} ${data.total_ratings === 1 ? 'rating' : 'ratings'})`;
+                        modalRating.innerHTML = `⭐ ${data.average_rating}`;
+                    } else {
+                        avgRatingDisplay.textContent = 'No ratings yet';
+                        modalRating.innerHTML = `⭐ N/A`;
+                    }
+                    
+                    // Update star display based on user rating
+                    const stars = document.querySelectorAll('#starRating .star');
+                    const userRatingDisplay = document.getElementById('userRatingDisplay');
+                    
+                    if (data.user_rating) {
+                        // User has rated - show their rating
+                        stars.forEach(star => {
+                            const rating = parseInt(star.dataset.rating);
+                            if (rating <= data.user_rating) {
+                                star.classList.add('active');
+                            } else {
+                                star.classList.remove('active');
+                            }
                         });
+                        userRatingDisplay.textContent = `Your rating: ${data.user_rating / 2} stars`;
+                    } else {
+                        // User hasn't rated - clear stars
+                        stars.forEach(star => {
+                            star.classList.remove('active');
+                        });
+                        userRatingDisplay.textContent = '';
                     }
                 }
             } catch (error) {
-                console.error('Error loading movies:', error);
+                console.error('Error loading ratings:', error);
             }
         }
+
+        // Submit movie rating
+        async function submitRating(movieId, rating) {
+            try {
+                const formData = new FormData();
+                formData.append('movie_id', movieId);
+                formData.append('rating', rating);
+                
+                const response = await fetch('api/rate_movie.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload ratings to update modal display
+                    loadMovieRatings(movieId);
+                    
+                    // Update the movie in allMovies array with new rating
+                    const movieIndex = allMovies.findIndex(m => m.movie_id === movieId);
+                    if (movieIndex !== -1) {
+                        allMovies[movieIndex].average_rating = data.average_rating;
+                        allMovies[movieIndex].total_ratings = data.total_ratings;
+                        
+                        // Re-render the movies grid to show updated rating
+                        displayMovies(allMovies);
+                    }
+                } else {
+                    alert(data.message || 'Failed to submit rating');
+                }
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                alert('Error submitting rating. Please try again.');
+            }
+        }
+
+        // Initialize star rating click handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            const stars = document.querySelectorAll('#starRating .star');
+            
+            stars.forEach((star, index) => {
+                // Click event
+                star.addEventListener('click', () => {
+                    if (currentMovieId) {
+                        const rating = parseInt(star.dataset.rating);
+                        submitRating(currentMovieId, rating);
+                    } else {
+                        alert('Please select a movie first');
+                    }
+                });
+                
+                // Hover effect
+                star.addEventListener('mouseenter', () => {
+                    stars.forEach((s, i) => {
+                        if (i <= index) {
+                            s.classList.add('hover');
+                        } else {
+                            s.classList.remove('hover');
+                        }
+                    });
+                });
+            });
+            
+            // Remove hover effect when leaving star rating area
+            const starRating = document.getElementById('starRating');
+            starRating.addEventListener('mouseleave', () => {
+                stars.forEach(s => s.classList.remove('hover'));
+            });
+        });
+
+        // Close modal when clicking outside the content
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('movieModal');
+            if (e.target === modal) {
+                closeMovieModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMovieModal();
+            }
+        });
+
+        // Add search event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('movieSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    searchMovies(e.target.value);
+                });
+            }
+        });
         
         // Escape HTML to prevent XSS
         function escapeHtml(text) {

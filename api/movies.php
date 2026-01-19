@@ -2,7 +2,6 @@
 require_once '../config.php';
 
 header('Content-Type: application/json');
-session_start();
 
 // Check that user is admin
 if (!isAdmin()) {
@@ -18,7 +17,7 @@ switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
             $id = intval($_GET['id']);
-            $stmt = $conn->prepare("SELECT movie_id, title, duration, description FROM Movie WHERE movie_id = ?");
+            $stmt = $conn->prepare("SELECT movie_id, title, duration, description, poster_image FROM movie WHERE movie_id = ?");
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -35,7 +34,7 @@ switch ($method) {
 
         if (isset($_GET['search'])) {
             $search = '%' . $conn->real_escape_string($_GET['search']) . '%';
-            $stmt = $conn->prepare("SELECT movie_id, title, duration, description FROM Movie WHERE title LIKE ? OR description LIKE ? ORDER BY title");
+            $stmt = $conn->prepare("SELECT movie_id, title, duration, description, poster_image FROM movie WHERE title LIKE ? OR description LIKE ? ORDER BY title");
             $stmt->bind_param("ss", $search, $search);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -50,7 +49,7 @@ switch ($method) {
             break;
         }
 
-        $result = $conn->query("SELECT movie_id, title, duration, description FROM Movie ORDER BY title");
+        $result = $conn->query("SELECT movie_id, title, duration, description, poster_image FROM movie ORDER BY title");
         $movies = [];
         while ($row = $result->fetch_assoc()) {
             $movies[] = $row;
@@ -72,7 +71,7 @@ switch ($method) {
             $movie_id = intval($data['movie_id']);
 
             // Check if movie exists
-            $stmt = $conn->prepare("SELECT movie_id FROM Movie WHERE movie_id = ?");
+            $stmt = $conn->prepare("SELECT movie_id FROM movie WHERE movie_id = ?");
             $stmt->bind_param("i", $movie_id);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -85,7 +84,7 @@ switch ($method) {
             $stmt->close();
 
             // Attempt delete
-            $stmt = $conn->prepare("DELETE FROM Movie WHERE movie_id = ?");
+            $stmt = $conn->prepare("DELETE FROM movie WHERE movie_id = ?");
             $stmt->bind_param("i", $movie_id);
 
             if ($stmt->execute()) {
@@ -117,7 +116,7 @@ switch ($method) {
         $duration = isset($data['duration']) ? intval($data['duration']) : null;
         $description = isset($data['description']) ? trim($data['description']) : null;
 
-        $stmt = $conn->prepare("INSERT INTO Movie (title, duration, description) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO movie (title, duration, description) VALUES (?, ?, ?)");
         $stmt->bind_param("sis", $title, $duration, $description);
 
         if ($stmt->execute()) {
@@ -154,7 +153,7 @@ switch ($method) {
         $duration = isset($data['duration']) ? intval($data['duration']) : null;
         $description = isset($data['description']) ? trim($data['description']) : null;
 
-        $stmt = $conn->prepare("UPDATE Movie SET title = ?, duration = ?, description = ? WHERE movie_id = ?");
+        $stmt = $conn->prepare("UPDATE movie SET title = ?, duration = ?, description = ? WHERE movie_id = ?");
         $stmt->bind_param("sisi", $title, $duration, $description, $movie_id);
 
         if ($stmt->execute()) {

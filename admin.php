@@ -123,6 +123,8 @@ if (!isLoggedIn() || !isAdmin()) {
             border-radius: 12px;
             width: 90%;
             max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -139,6 +141,8 @@ if (!isLoggedIn() || !isAdmin()) {
             font-weight: bold;
             cursor: pointer;
             line-height: 1;
+            z-index: 10;
+            position: relative;
         }
 
         .close:hover {
@@ -270,7 +274,7 @@ if (!isLoggedIn() || !isAdmin()) {
                 <div class="form-group">
                     <label for="movie-poster">Poster Image</label>
                     <input type="file" id="movie-poster" name="poster" accept="image/*">
-                    <div id="current-poster" style="margin-top: 10px;"></div>
+                    <div id="current-poster" style="margin-top: 10px; max-height: 200px; overflow: hidden;"></div>
                 </div>
                 <div style="display: flex; gap: 1rem;">
                     <button type="submit" class="btn" style="flex: 1;">Save</button>

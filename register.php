@@ -43,7 +43,7 @@ if (strlen($password) < 6) {
 $conn = getDBConnection();
 
 // Check if email already exists
-$stmt = $conn->prepare("SELECT customer_id FROM Customer WHERE email = ?");
+$stmt = $conn->prepare("SELECT customer_id FROM customer WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $stmt->store_result();   
@@ -60,7 +60,7 @@ if ($stmt->num_rows > 0) {
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
 // Insert new user (default non-admin)
-$stmt = $conn->prepare("INSERT INTO Customer (name, email, password_hash, admin) VALUES (?, ?, ?, 0)");
+$stmt = $conn->prepare("INSERT INTO customer (name, email, password_hash, admin) VALUES (?, ?, ?, 0)");
 $stmt->bind_param("sss", $name, $email, $password_hash);
 
 if ($stmt->execute()) {

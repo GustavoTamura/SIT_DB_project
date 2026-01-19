@@ -2,7 +2,6 @@
 require_once 'config.php';
 
 header('Content-Type: application/json');
-session_start();
 
 // Only allow POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -50,7 +49,7 @@ try {
 
     // Update customer payment info
     $stmt = $conn->prepare("
-        UPDATE Customer
+        UPDATE customer
         SET card_number = ?, expiry_date = ?, cvv = ?
         WHERE customer_id = ?
     ");
