@@ -17,11 +17,11 @@ async function loadMovies() {
             populateMovieSelect();
         } else {
             console.error('Failed to load movies:', data);
-            alert('無法載入電影列表');
+            alert('Failed to load movie list.');
         }
     } catch (error) {
         console.error('Error loading movies:', error);
-        alert('載入電影時發生錯誤');
+        alert('An error occurred while loading movies.');
     }
 }
 
@@ -63,7 +63,7 @@ function populateMovieSelect() {
 // Load showtimes for selected movie
 async function loadShowtimes(movieId) {
     try {
-        const response = await fetch(`api/get_showtimes.php?movie_id=${movieId}`);
+        const response = await fetch(`api/get_showtimes.php?movie_id=${encodeURIComponent(movieId)}`);
         const data = await response.json();
         
         if (data.success && data.showtimes) {
@@ -71,7 +71,6 @@ async function loadShowtimes(movieId) {
             populateShowtimeSelect();
         } else {
             console.error('Failed to load showtimes:', data);
-            // If no showtimes available, show message
             const timeSelect = document.getElementById('time');
             if (timeSelect) {
                 timeSelect.innerHTML = '<option value="">No showtimes available</option>';
@@ -79,6 +78,10 @@ async function loadShowtimes(movieId) {
         }
     } catch (error) {
         console.error('Error loading showtimes:', error);
+        const timeSelect = document.getElementById('time');
+        if (timeSelect) {
+            timeSelect.innerHTML = '<option value="">Error loading showtimes</option>';
+        }
     }
 }
 
@@ -107,7 +110,7 @@ function handleMovieChange(event) {
         selectedMovieId = movieId;
         loadShowtimes(movieId);
         
-        // Enable date field
+        // Enable date field if you use it
         const dateField = document.getElementById('date');
         if (dateField) {
             dateField.disabled = false;
@@ -139,19 +142,19 @@ async function handleBookingSubmit(event) {
         email: form.email.value
     };
     
-    // Validate
+    // Validation
     if (!formData.movie_id) {
-        alert('請選擇電影');
+        alert('Please select a movie.');
         return;
     }
     
     if (!formData.showtime_id) {
-        alert('請選擇場次');
+        alert('Please select a showtime.');
         return;
     }
     
     if (!formData.name || !formData.email) {
-        alert('請填寫姓名和電子郵件');
+        alert('Please enter your name and email.');
         return;
     }
     
@@ -165,20 +168,32 @@ async function handleBookingSubmit(event) {
         });
         
         const data = await response.json();
+        console.log('Booking response:', data); // 👈 debug
         
         if (data.success) {
-            alert('訂票成功！您的訂票編號是: ' + data.booking_id);
+            // Show success message with booking id
+            alert('Booking successful! Your booking ID is: ' + data.booking_id);
+
+            // Debug: log URL we are going to
+            const targetUrl = 'payment.html?booking_id=' + encodeURIComponent(data.booking_id);
+            console.log('Redirecting to:', targetUrl); // 👈 debug
+
+            // Optional: reset local state
             form.reset();
             selectedMovieId = null;
             selectedShowtimeId = null;
+            
+            // Redirect user to payment page with booking id
+            window.location.href = targetUrl;
         } else {
-            alert('訂票失敗: ' + (data.message || '未知錯誤'));
+            alert('Booking failed: ' + (data.message || 'Unknown error.'));
         }
     } catch (error) {
         console.error('Error creating booking:', error);
-        alert('提交訂票時發生錯誤');
+        alert('An error occurred while submitting your booking.');
     }
 }
+
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {

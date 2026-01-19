@@ -461,16 +461,31 @@ if (!isLoggedIn() || !isAdmin()) {
             }
 
             try {
-                const response = await fetch('api/movies.php', {
-                    method: 'DELETE',
+                const response = await fetch('api/movies.php?action=delete', {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ movie_id: movieId })
                 });
 
+                // If the HTTP status is not OK (4xx / 5xx), show a nice message
+                if (!response.ok) {
+                    // 409 or 500 most likely means FK constraint (linked showtimes/bookings)
+                    if (response.status === 409 || response.status === 500) {
+                        showAlert(
+                            'Cannot delete this movie because it is linked to existing showtimes or bookings.',
+                            'error'
+                        );
+                    } else {
+                        showAlert('Server error while deleting the movie.', 'error');
+                    }
+                    return;
+                }
+
+                // For successful responses, we expect valid JSON
                 const data = await response.json();
-                
+
                 if (data.success) {
                     showAlert('Movie deleted successfully', 'success');
                     loadMovies();
@@ -479,9 +494,12 @@ if (!isLoggedIn() || !isAdmin()) {
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Connection error', 'error');
+                // This only runs on real network errors (server down, etc.)
+                showAlert('Connection error while contacting the server.', 'error');
             }
         }
+
+
 
         // Close modal
         function closeModal() {

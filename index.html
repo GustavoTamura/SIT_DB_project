@@ -182,6 +182,14 @@
             color: #ffd700;
         }
 
+        /* Description added for each movie */
+        .movie-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
         .btn {
             background: var(--primary-color);
             color: white;
@@ -193,6 +201,9 @@
             font-weight: 600;
             transition: background 0.3s, transform 0.2s;
             width: 100%;
+            text-align: center;
+            display: inline-block;
+            text-decoration: none;
         }
 
         .btn:hover {
@@ -487,87 +498,11 @@
         <section id="movies">
             <h2 class="section-title">Now Showing</h2>
             <div class="movies-grid">
-                <div class="movie-card" onclick="selectMovie('Dune: Part Two', 'Sci-Fi', '2h 46m', 'PG-13')">
-                    <div class="movie-poster">🎬</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Dune: Part Two</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.0</span>
-                            <span>Sci-Fi</span>
-                            <span>2h 46m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('Oppenheimer', 'Biography', '3h 0m', 'R')">
-                    <div class="movie-poster">🎭</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Oppenheimer</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 8.8</span>
-                            <span>Biography</span>
-                            <span>3h 0m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('Barbie', 'Comedy', '1h 54m', 'PG-13')">
-                    <div class="movie-poster">🎀</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Barbie</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 7.5</span>
-                            <span>Comedy</span>
-                            <span>1h 54m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('The Dark Knight', 'Action', '2h 32m', 'PG-13')">
-                    <div class="movie-poster">🦇</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">The Dark Knight</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.5</span>
-                            <span>Action</span>
-                            <span>2h 32m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('Inception', 'Sci-Fi', '2h 28m', 'PG-13')">
-                    <div class="movie-poster">🌀</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Inception</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.2</span>
-                            <span>Sci-Fi</span>
-                            <span>2h 28m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
-
-                <div class="movie-card" onclick="selectMovie('Interstellar', 'Sci-Fi', '2h 49m', 'PG-13')">
-                    <div class="movie-poster">🌌</div>
-                    <div class="movie-info">
-                        <h3 class="movie-title">Interstellar</h3>
-                        <div class="movie-meta">
-                            <span class="movie-rating">⭐ 9.1</span>
-                            <span>Sci-Fi</span>
-                            <span>2h 49m</span>
-                        </div>
-                        <a href="booking.html" class="btn">Book Now</a>
-                    </div>
-                </div>
+                <!-- Movie cards will be loaded dynamically from the database -->
             </div>
         </section>
 
-        <!-- Booking Section -->
+        <!-- Booking Section (front-end demo; booking page real logic is in booking.html) -->
         <section id="booking" class="booking-section hidden">
             <div class="booking-header">
                 <div class="selected-movie">
@@ -680,7 +615,7 @@
         const ticketPrice = 12.00;
         const occupiedSeats = ['A1', 'A2', 'B5', 'C3', 'D7', 'E2', 'F9', 'G4', 'H6', 'I8', 'J1', 'K5', 'L3'];
         
-        // Load movies from database
+        // Load movies from database and display them on the home page
         async function loadMoviesFromDB() {
             try {
                 const response = await fetch('api/get_movies.php');
@@ -692,9 +627,11 @@
                         moviesGrid.innerHTML = '';
                         
                         data.movies.forEach(movie => {
-                            const duration = movie.duration ? `${Math.floor(movie.duration / 60)}h ${movie.duration % 60}m` : 'N/A';
+                            const duration = movie.duration
+                                ? `${Math.floor(movie.duration / 60)}h ${movie.duration % 60}m`
+                                : 'N/A';
                             const description = movie.description || 'No description available';
-                            
+
                             const movieCard = document.createElement('div');
                             movieCard.className = 'movie-card';
                             movieCard.innerHTML = `
@@ -706,7 +643,12 @@
                                         <span>Movie</span>
                                         <span>${duration}</span>
                                     </div>
-                                    <a href="booking.html?movie=${encodeURIComponent(movie.title)}" class="btn">Book Now</a>
+                                    <p class="movie-description">
+                                        ${escapeHtml(description)}
+                                    </p>
+                                    <a href="booking.html?movie=${encodeURIComponent(movie.title)}" class="btn">
+                                        Book Now
+                                    </a>
                                 </div>
                             `;
                             
@@ -719,9 +661,10 @@
             }
         }
         
+        // Escape HTML to prevent XSS
         function escapeHtml(text) {
             const div = document.createElement('div');
-            div.textContent = text;
+            div.textContent = text == null ? '' : String(text);
             return div.innerHTML;
         }
         
@@ -733,6 +676,8 @@
         // Initialize seats grid
         function initSeats() {
             const seatsGrid = document.getElementById('seats-grid');
+            if (!seatsGrid) return;
+
             seatsGrid.innerHTML = '';
             const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
             const cols = 12;
@@ -821,7 +766,14 @@
                 return;
             }
 
-            alert(`Booking confirmed!\n\nMovie: ${selectedMovie}\nShowtime: ${selectedShowtime}\nSeats: ${selectedSeats.join(', ')}\nTotal: $${(selectedSeats.length * ticketPrice).toFixed(2)}\n\nThank you for your booking!`);
+            alert(
+                `Booking confirmed!\n\n` +
+                `Movie: ${selectedMovie}\n` +
+                `Showtime: ${selectedShowtime}\n` +
+                `Seats: ${selectedSeats.join(', ')}\n` +
+                `Total: $${(selectedSeats.length * ticketPrice).toFixed(2)}\n\n` +
+                `Thank you for your booking!`
+            );
             
             // Reset booking
             selectedMovie = null;
@@ -831,7 +783,7 @@
             document.getElementById('summary-section').classList.add('hidden');
         }
 
-        // Initialize on page load
+        // Initialize seats once (for the demo section)
         initSeats();
     </script>
 </body>

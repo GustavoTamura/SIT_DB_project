@@ -46,9 +46,9 @@ $conn = getDBConnection();
 $stmt = $conn->prepare("SELECT customer_id FROM Customer WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
-$result = $stmt->get_result();
+$stmt->store_result();   
 
-if ($result->num_rows > 0) {
+if ($stmt->num_rows > 0) {
     $stmt->close();
     $conn->close();
     http_response_code(400);
