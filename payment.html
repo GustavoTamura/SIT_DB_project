@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - MovieHub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">🎬 MovieHub</a>
+            <ul class="nav-links">
+                <li><a href="index.html#movies">Movies</a></li>
+                <li><a href="booking.html" class="active">Booking</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero hero-small">
+        <h1>Payment</h1>
+        <p>Complete your payment to confirm your booking.</p>
+    </section>
+
+    <main class="container">
+        <section class="booking-section static-booking">
+            <h2 class="section-title">Payment Details</h2>
+
+            <p id="booking-info" class="muted-text">
+                Processing payment for booking<span id="booking-id-label"></span>.
+            </p>
+
+            <form class="booking-form" id="payment-form">
+                <div class="form-row">
+                    <label for="card-name">Name on card</label>
+                    <input type="text" id="card-name" name="card-name" placeholder="John Doe" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="card-number">Card number</label>
+                    <input type="text" id="card-number" name="card-number"
+                           placeholder="1234 5678 9012 3456"
+                           maxlength="19" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="expiry-date">Expiry date</label>
+                    <!-- Using date input to match DATE column in DB (YYYY-MM-DD) -->
+                    <input type="date" id="expiry-date" name="expiry-date" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="cvv">CVV</label>
+                    <input type="password" id="cvv" name="cvv"
+                           placeholder="123"
+                           maxlength="4" required>
+                </div>
+
+                <button type="submit" class="btn">Pay</button>
+            </form>
+
+            <div id="payment-message" class="info-message" style="display:none;"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="index.html#movies">Movies</a>
+                <a href="booking.html">Booking</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <p>&copy; 2025 MovieHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="payment.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking - MovieHub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" class="logo">🎬 MovieHub</a>
+            <ul class="nav-links">
+                <li><a href="index.html#movies">Movies</a></li>
+                <li><a href="booking.html" class="active">Booking</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero hero-small">
+        <h1>Booking</h1>
+        <p>Select your movie, showtime and seats, then confirm your reservation.</p>
+    </section>
+
+    <main class="container">
+        <section class="booking-section static-booking">
+            <h2 class="section-title">Booking Details</h2>
+            <form class="booking-form">
+                <div class="form-row">
+                    <label for="movie">Movie</label>
+                    <select id="movie" name="movie">
+                        <option value="">Select a movie</option>
+                        <option>Dune: Part Two</option>
+                        <option>Oppenheimer</option>
+                        <option>Barbie</option>
+                        <option>The Dark Knight</option>
+                        <option>Inception</option>
+                        <option>Interstellar</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date">
+                </div>
+
+                <div class="form-row">
+                    <label for="time">Showtime</label>
+                    <select id="time" name="time">
+                        <option value="">Select a time</option>
+                        <option>10:00 AM</option>
+                        <option>1:30 PM</option>
+                        <option>4:45 PM</option>
+                        <option>8:00 PM</option>
+                        <option>10:30 PM</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label for="tickets">Number of tickets</label>
+                    <input type="number" id="tickets" name="tickets" min="1" max="10" value="1">
+                </div>
+
+                <div class="form-row">
+                    <label for="name">Full name</label>
+                    <input type="text" id="name" name="name" placeholder="John Doe">
+                </div>
+
+                <div class="form-row">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com">
+                </div>
+
+                <button type="submit" class="btn">Confirm Booking</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="index.html#movies">Movies</a>
+                <a href="booking.html">Booking</a>
+                <a href="about.html">About Us</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <p>&copy; 2025 MovieHub. All rights reserved.</p>
+        </div>
+    </footer>
+    <script src="auth.js"></script>
+    <script src="booking.js"></script>
+</body>
+</html>
+
+
