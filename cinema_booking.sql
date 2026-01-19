@@ -27,6 +27,17 @@ SET time_zone = "+00:00";
 -- 資料表結構 `booking`
 --
 
+CREATE TABLE contact_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ip_address VARCHAR(45) NOT NULL,
+    fullname VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 CREATE TABLE `booking` (
   `booking_id` int(11) NOT NULL,
   `booking_time` datetime DEFAULT NULL,

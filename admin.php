@@ -76,6 +76,21 @@ if (!isLoggedIn() || !isAdmin()) {
             gap: 0.5rem;
         }
 
+        .btn-showtime {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-showtime:hover {
+            background: #1e88e5;
+        }
+
+
         .btn-edit {
             background: #4caf50;
             color: white;
@@ -213,6 +228,28 @@ if (!isLoggedIn() || !isAdmin()) {
         </nav>
     </header>
 
+<?php
+$mode = $_GET['mode'] ?? 'movies'; // movies | messages
+?>
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <a href="admin.php?mode=movies"
+           class="btn"
+           style="flex: 1; text-align: center; font-size: 1.1rem;
+                  background: <?= $mode === 'movies' ? '#4CAF50' : '#777' ?>;">
+            🎬 Manage Movies & Showtimes
+        </a>
+
+        <a href="admin.php?mode=messages"
+           class="btn"
+           style="flex: 1; text-align: center; font-size: 1.1rem;
+                  background: <?= $mode === 'messages' ? '#2196f3' : '#777' ?>;">
+            📩 View Contact Messages
+        </a>
+    </div>
+
+<?php if ($mode === 'movies'): ?>
+<!-- EVERYTHING THAT ALREADY EXISTS STAYS HERE -->
+
     <section class="hero hero-small">
         <h1>Movie Administration</h1>
         <p>Manage your cinema movies: add, edit, delete and search.</p>
@@ -283,6 +320,48 @@ if (!isLoggedIn() || !isAdmin()) {
             </form>
         </div>
     </div>
+
+    <!-- Modal to add a showtime (placeholder) -->
+    <div id="showtime-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Showtime</h2>
+                <span class="close" onclick="closeShowtimeModal()">&times;</span>
+            </div>
+
+            <form id="showtime-form" onsubmit="saveShowtime(event)">
+                <input type="hidden" id="showtime-movie-id">
+
+                <div class="form-group">
+                    <label for="showtime-room">Theater & Room</label>
+                    <select id="showtime-room" required>
+                        <option value="">Loading rooms...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="showtime-date">Date</label>
+                    <input type="date" id="showtime-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="showtime-time">Time</label>
+                    <input type="time" id="showtime-time" required>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn" style="flex: 1;">Save</button>
+                    <button type="button"
+                            class="btn"
+                            onclick="closeShowtimeModal()"
+                            style="flex: 1; background: #666;">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <footer>
         <div class="footer-content">
@@ -360,6 +439,9 @@ if (!isLoggedIn() || !isAdmin()) {
                     <td>${escapeHtml(movie.description || '-')}</td>
                     <td>
                         <div class="action-buttons">
+                            <button class="btn-showtime" onclick="openAddShowtimeModal(${movie.movie_id})">
+                                Add Showtime
+                            </button>
                             <button class="btn-edit" onclick="editMovie(${movie.movie_id})">Edit</button>
                             <button class="btn-delete" onclick="deleteMovie(${movie.movie_id})">Delete</button>
                         </div>
@@ -556,6 +638,52 @@ if (!isLoggedIn() || !isAdmin()) {
         }
 
 
+        // Open Add Showtime modal (placeholder)
+        function openAddShowtimeModal(movieId) {
+            document.getElementById('showtime-movie-id').value = movieId;
+            document.getElementById('showtime-form').reset();
+
+            loadRooms();
+
+            document.getElementById('showtime-modal').style.display = 'block';
+        }
+
+        // Close Showtime modal
+        function closeShowtimeModal() {
+            document.getElementById('showtime-modal').style.display = 'none';
+        }
+
+        function saveShowtime(event) {
+            event.preventDefault();
+
+            const formData = new FormData();
+            formData.append('movie_id', document.getElementById('showtime-movie-id').value);
+            formData.append('room_id', document.getElementById('showtime-room').value);
+            formData.append('show_date', document.getElementById('showtime-date').value);
+            formData.append('show_time', document.getElementById('showtime-time').value);
+
+            fetch('/api/add_showtime.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Showtime added successfully', 'success');
+                    closeShowtimeModal();
+                } else {
+                    showAlert(data.error || 'Failed to add showtime', 'error');
+                    closeShowtimeModal();
+                }
+            })
+            .catch(error => {
+                console.error('Error saving showtime:', error);
+                showAlert('Server error while adding showtime', 'error');
+                closeShowtimeModal();
+            });
+        }
+
+
 
         // Close modal
         function closeModal() {
@@ -565,10 +693,39 @@ if (!isLoggedIn() || !isAdmin()) {
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('movie-modal');
-            if (event.target === modal) {
+            const movieModal = document.getElementById('movie-modal');
+            const showtimeModal = document.getElementById('showtime-modal');
+
+            if (event.target === movieModal) {
                 closeModal();
             }
+
+            if (event.target === showtimeModal) {
+                closeShowtimeModal();
+            }
+        };
+
+
+        function loadRooms() {
+            const select = document.getElementById('showtime-room');
+            select.innerHTML = '<option value="">Loading rooms...</option>';
+
+            fetch('/api/get_rooms.php')
+                .then(response => response.json())
+                .then(rooms => {
+                    select.innerHTML = '<option value="">Select a theater and room</option>';
+
+                    rooms.forEach(room => {
+                        const option = document.createElement('option');
+                        option.value = room.room_id;
+                        option.textContent = room.label;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading rooms:', error);
+                    select.innerHTML = '<option value="">Failed to load rooms</option>';
+                });
         }
 
         // Show alert
@@ -589,7 +746,120 @@ if (!isLoggedIn() || !isAdmin()) {
             return div.innerHTML;
         }
     </script>
-    <script src="auth.js?v=6"></script>
+
+
+<?php endif; ?>
+
+
+
+<?php if ($mode === 'messages'): ?>
+
+<?php
+require_once 'config.php';
+$conn = getDBConnection();
+
+/* Filters */
+$name      = $_GET['name'] ?? '';
+$email     = $_GET['email'] ?? '';
+$from_date = $_GET['from'] ?? '';
+$to_date   = $_GET['to'] ?? '';
+
+$where = [];
+
+if ($name !== '') {
+    $safe = $conn->real_escape_string($name);
+    $where[] = "fullname LIKE '%$safe%'";
+}
+
+if ($email !== '') {
+    $safe = $conn->real_escape_string($email);
+    $where[] = "email LIKE '%$safe%'";
+}
+
+if ($from_date !== '') {
+    $where[] = "submitted_at >= '$from_date 00:00:00'";
+}
+
+if ($to_date !== '') {
+    $where[] = "submitted_at <= '$to_date 23:59:59'";
+}
+
+$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+$sql = "
+    SELECT *
+    FROM contact_messages
+    $whereSql
+    ORDER BY submitted_at DESC
+";
+
+$result = $conn->query($sql);
+?>
+
+<!-- Search / refresh form -->
+<form method="GET" style="margin-bottom: 2rem;">
+    <input type="hidden" name="mode" value="messages">
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        <input type="text" name="name" placeholder="Full name" value="<?= htmlspecialchars($name) ?>">
+        <input type="email" name="email" placeholder="Email" value="<?= htmlspecialchars($email) ?>">
+        <input type="date" name="from" value="<?= htmlspecialchars($from_date) ?>">
+        <input type="date" name="to" value="<?= htmlspecialchars($to_date) ?>">
+    </div>
+
+    <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+        <button type="submit" class="btn">🔍 Search</button>
+        <a href="admin.php?mode=messages" class="btn" style="background: #666;">
+            🔄 Refresh
+        </a>
+    </div>
+</form>
+
+<!-- Messages table -->
+<div style="overflow-x: auto;">
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #333; color: white;">
+            <th style="padding: 0.75rem;">Date</th>
+            <th>Full name</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Message</th>
+            <th>IP</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php if ($result && $result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <tr style="border-bottom: 1px solid #ccc;">
+                    <td style="padding: 0.75rem;">
+                        <?= date('Y-m-d H:i', strtotime($row['submitted_at'])) ?>
+                    </td>
+                    <td><?= htmlspecialchars($row['fullname']) ?></td>
+                    <td><?= htmlspecialchars($row['email']) ?></td>
+                    <td><?= htmlspecialchars($row['subject']) ?></td>
+                    <td style="max-width: 400px;">
+                        <?= nl2br(htmlspecialchars($row['message'])) ?>
+                    </td>
+                    <td><?= htmlspecialchars($row['ip_address']) ?></td>
+                </tr>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <tr>
+                <td colspan="6" style="padding: 1rem; text-align: center;">
+                    No messages found.
+                </td>
+            </tr>
+        <?php endif; ?>
+    </tbody>
+</table>
+</div>
+
+<?php endif; ?>
+
+
+
+<script src="auth.js?v=6"></script>
 </body>
 </html>
 
